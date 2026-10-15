@@ -17,7 +17,6 @@ const commentSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Task',
     required: [true, 'Task reference is required'],
-    index: true,
   },
   author: {
     type: mongoose.Schema.Types.ObjectId,

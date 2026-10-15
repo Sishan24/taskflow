@@ -22,8 +22,19 @@ export const protect = asyncHandler(async (req, res, next) => {
     return next(new AppError('Authentication required. Please provide a Bearer token.', 401));
   }
 
-  // Verify JWT token; errors (JsonWebTokenError, TokenExpiredError) propagate to errorHandler
-  const decoded = jwt.verify(token, env.JWT_SECRET);
+  // Verify JWT token; errors (JsonWebTokenError, TokenExpiredError, or decode SyntaxError) propagate to errorHandler
+  let decoded;
+  try {
+    decoded = jwt.verify(token, env.JWT_SECRET);
+  } catch (err) {
+    if (err.name === 'TokenExpiredError') {
+      return next(err);
+    }
+    // Any other JWT verification or parsing failure
+    const error = new AppError('Invalid token', 401);
+    error.name = 'JsonWebTokenError';
+    return next(error);
+  }
 
   // Check if user still exists
   const currentUser = await User.findById(decoded.id);

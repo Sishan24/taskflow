@@ -1,0 +1,359 @@
+{
+  "info": {
+    "_postman_id": "a98e8b22-4467-4d76-bc30-f7d9a1876251",
+    "name": "TaskFlow REST API",
+    "description": "Production-grade RESTful API collection for TaskFlow task and project management backend.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Service health check endpoint.\n\nExample Response (200 OK):\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"status\": \"ok\"\n  }\n}\n```"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane@example.com\",\n  \"password\": \"Secret123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Register a new user account.\n\nExample Response (201 Created):\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"user\": {\n      \"_id\": \"660b4a1b2c3d4e5f6789012a\",\n      \"name\": \"Jane Doe\",\n      \"email\": \"jane@example.com\",\n      \"role\": \"user\",\n      \"createdAt\": \"2026-10-15T12:00:00.000Z\"\n    },\n    \"token\": \"eyJhbGciOiJIUzI1NiIsIn...\"\n  }\n}\n```"
+          }
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Save token', () => {",
+                  "  const r = pm.response.json();",
+                  "  if (r.data && r.data.token) {",
+                  "    pm.collectionVariables.set('token', r.data.token);",
+                  "  }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"jane@example.com\",\n  \"password\": \"Secret123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Authenticate user and set collection token variable.\n\nExample Response (200 OK):\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"user\": {\n      \"_id\": \"660b4a1b2c3d4e5f6789012a\",\n      \"name\": \"Jane Doe\",\n      \"email\": \"jane@example.com\",\n      \"role\": \"user\",\n      \"createdAt\": \"2026-10-15T12:00:00.000Z\"\n    },\n    \"token\": \"eyJhbGciOiJIUzI1NiIsIn...\"\n  }\n}\n```"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get Current User Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "me"]
+            },
+            "description": "Retrieve profile of authenticated caller.\n\nExample Response (200 OK):\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"user\": {\n      \"_id\": \"660b4a1b2c3d4e5f6789012a\",\n      \"name\": \"Jane Doe\",\n      \"email\": \"jane@example.com\",\n      \"role\": \"user\",\n      \"createdAt\": \"2026-10-15T12:00:00.000Z\"\n    }\n  }\n}\n```"
+          }
+        },
+        {
+          "name": "Get All Users (Admin Only)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "Retrieve all registered users with pagination (Admin only).\n\nExample Response (200 OK):\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"users\": [\n      {\n        \"_id\": \"660b4a1b2c3d4e5f6789012a\",\n        \"name\": \"Jane Doe\",\n        \"email\": \"jane@example.com\",\n        \"role\": \"admin\",\n        \"createdAt\": \"2026-10-15T12:00:00.000Z\"\n      }\n    ],\n    \"pagination\": {\n      \"page\": 1,\n      \"limit\": 10,\n      \"total\": 1,\n      \"totalPages\": 1\n    }\n  }\n}\n```"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Projects",
+      "item": [
+        {
+          "name": "Create Project",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Backend Infrastructure\",\n  \"description\": \"API redesign and security hardening\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/projects",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "projects"]
+            },
+            "description": "Create a project workspace. The creator is set as owner and member.\n\nExample Response (201 Created):\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"project\": {\n      \"_id\": \"660b4a1b2c3d4e5f6789012b\",\n      \"title\": \"Backend Infrastructure\",\n      \"description\": \"API redesign and security hardening\",\n      \"owner\": \"660b4a1b2c3d4e5f6789012a\",\n      \"members\": [\"660b4a1b2c3d4e5f6789012a\"],\n      \"createdAt\": \"2026-10-15T12:05:00.000Z\"\n    }\n  }\n}\n```"
+          }
+        },
+        {
+          "name": "List Projects",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/projects",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "projects"]
+            },
+            "description": "Get all projects where caller is owner or member.\n\nExample Response (200 OK):\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"projects\": [\n      {\n        \"_id\": \"660b4a1b2c3d4e5f6789012b\",\n        \"title\": \"Backend Infrastructure\",\n        \"description\": \"API redesign and security hardening\",\n        \"owner\": \"660b4a1b2c3d4e5f6789012a\",\n        \"members\": [\"660b4a1b2c3d4e5f6789012a\"],\n        \"createdAt\": \"2026-10-15T12:05:00.000Z\"\n      }\n    ]\n  }\n}\n```"
+          }
+        },
+        {
+          "name": "Get Project by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/projects/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "projects", ":id"],
+              "variable": [{ "key": "id", "value": "660b4a1b2c3d4e5f6789012b" }]
+            },
+            "description": "Retrieve project details with populated owner and members. Non-members receive 404 to avoid leaking existence.\n\nExample Response (200 OK):\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"project\": {\n      \"_id\": \"660b4a1b2c3d4e5f6789012b\",\n      \"title\": \"Backend Infrastructure\",\n      \"description\": \"API redesign and security hardening\",\n      \"owner\": { \"_id\": \"660b4a1b2c3d4e5f6789012a\", \"name\": \"Jane Doe\", \"email\": \"jane@example.com\" },\n      \"members\": [{ \"_id\": \"660b4a1b2c3d4e5f6789012a\", \"name\": \"Jane Doe\", \"email\": \"jane@example.com\" }],\n      \"createdAt\": \"2026-10-15T12:05:00.000Z\"\n    }\n  }\n}\n```"
+          }
+        },
+        {
+          "name": "Update Project",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Infrastructure Title\",\n  \"description\": \"Updated scope and description\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/projects/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "projects", ":id"],
+              "variable": [{ "key": "id", "value": "660b4a1b2c3d4e5f6789012b" }]
+            },
+            "description": "Update project title or description (Owner only).\n\nExample Response (200 OK):\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"project\": {\n      \"_id\": \"660b4a1b2c3d4e5f6789012b\",\n      \"title\": \"Updated Infrastructure Title\",\n      \"description\": \"Updated scope and description\",\n      \"owner\": \"660b4a1b2c3d4e5f6789012a\",\n      \"members\": [\"660b4a1b2c3d4e5f6789012a\"],\n      \"createdAt\": \"2026-10-15T12:05:00.000Z\"\n    }\n  }\n}\n```"
+          }
+        },
+        {
+          "name": "Delete Project",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/projects/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "projects", ":id"],
+              "variable": [{ "key": "id", "value": "660b4a1b2c3d4e5f6789012b" }]
+            },
+            "description": "Delete project workspace and cascade delete all its tasks and comments (Owner or Admin).\n\nExample Response (200 OK):\n```json\n{\n  \"success\": true,\n  \"message\": \"Project and associated tasks/comments deleted successfully\"\n}\n```"
+          }
+        },
+        {
+          "name": "Add Member to Project",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"colleague@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/projects/:id/members",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "projects", ":id", "members"],
+              "variable": [{ "key": "id", "value": "660b4a1b2c3d4e5f6789012b" }]
+            },
+            "description": "Add a collaborator by email or userId (Owner only).\n\nExample Response (200 OK):\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"project\": {\n      \"_id\": \"660b4a1b2c3d4e5f6789012b\",\n      \"title\": \"Backend Infrastructure\",\n      \"members\": [\n        { \"_id\": \"660b4a1b2c3d4e5f6789012a\", \"name\": \"Jane Doe\", \"email\": \"jane@example.com\" },\n        { \"_id\": \"660b4a1b2c3d4e5f6789012c\", \"name\": \"Colleague\", \"email\": \"colleague@example.com\" }\n      ]\n    }\n  }\n}\n```"
+          }
+        },
+        {
+          "name": "Create Task in Project",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Implement JWT Rotation\",\n  \"description\": \"Add refresh tokens and rotation logic\",\n  \"status\": \"todo\",\n  \"priority\": \"high\",\n  \"dueDate\": \"2026-11-01\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/projects/:id/tasks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "projects", ":id", "tasks"],
+              "variable": [{ "key": "id", "value": "660b4a1b2c3d4e5f6789012b" }]
+            },
+            "description": "Create a task under the specified project (Project members only).\n\nExample Response (201 Created):\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"task\": {\n      \"_id\": \"660b4a1b2c3d4e5f6789012d\",\n      \"title\": \"Implement JWT Rotation\",\n      \"description\": \"Add refresh tokens and rotation logic\",\n      \"status\": \"todo\",\n      \"priority\": \"high\",\n      \"dueDate\": \"2026-11-01T00:00:00.000Z\",\n      \"project\": \"660b4a1b2c3d4e5f6789012b\",\n      \"createdBy\": \"660b4a1b2c3d4e5f6789012a\",\n      \"createdAt\": \"2026-10-15T12:10:00.000Z\"\n    }\n  }\n}\n```"
+          }
+        },
+        {
+          "name": "List Tasks in Project",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/projects/:id/tasks?status=todo&priority=high&sort=-dueDate&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "projects", ":id", "tasks"],
+              "variable": [{ "key": "id", "value": "660b4a1b2c3d4e5f6789012b" }],
+              "query": [
+                { "key": "status", "value": "todo" },
+                { "key": "priority", "value": "high" },
+                { "key": "sort", "value": "-dueDate" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            },
+            "description": "List tasks in a project with filtering by status/priority/assignedTo, sorting, and pagination.\n\nExample Response (200 OK):\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"tasks\": [\n      {\n        \"_id\": \"660b4a1b2c3d4e5f6789012d\",\n        \"title\": \"Implement JWT Rotation\",\n        \"status\": \"todo\",\n        \"priority\": \"high\"\n      }\n    ],\n    \"pagination\": {\n      \"page\": 1,\n      \"limit\": 10,\n      \"total\": 1,\n      \"totalPages\": 1\n    }\n  }\n}\n```"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "Update Task",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"in-progress\",\n  \"priority\": \"high\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", ":id"],
+              "variable": [{ "key": "id", "value": "660b4a1b2c3d4e5f6789012d" }]
+            },
+            "description": "Update task status, priority, description, or assignedTo (Creator or Assignee).\n\nExample Response (200 OK):\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"task\": {\n      \"_id\": \"660b4a1b2c3d4e5f6789012d\",\n      \"title\": \"Implement JWT Rotation\",\n      \"status\": \"in-progress\",\n      \"priority\": \"high\"\n    }\n  }\n}\n```"
+          }
+        },
+        {
+          "name": "Delete Task",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", ":id"],
+              "variable": [{ "key": "id", "value": "660b4a1b2c3d4e5f6789012d" }]
+            },
+            "description": "Delete a task and cascade delete its comments (Creator or Project Owner).\n\nExample Response (200 OK):\n```json\n{\n  \"success\": true,\n  \"message\": \"Task and associated comments deleted successfully\"\n}\n```"
+          }
+        },
+        {
+          "name": "Add Comment to Task",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Initial PR opened for review!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/tasks/:id/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "tasks", ":id", "comments"],
+              "variable": [{ "key": "id", "value": "660b4a1b2c3d4e5f6789012d" }]
+            },
+            "description": "Post a comment on a task (Project members only).\n\nExample Response (201 Created):\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"comment\": {\n      \"_id\": \"660b4a1b2c3d4e5f6789012e\",\n      \"text\": \"Initial PR opened for review!\",\n      \"task\": \"660b4a1b2c3d4e5f6789012d\",\n      \"author\": {\n        \"_id\": \"660b4a1b2c3d4e5f6789012a\",\n        \"name\": \"Jane Doe\",\n        \"email\": \"jane@example.com\"\n      },\n      \"createdAt\": \"2026-10-15T12:15:00.000Z\"\n    }\n  }\n}\n```"
+          }
+        }
+      ]
+    }
+  ]
+}

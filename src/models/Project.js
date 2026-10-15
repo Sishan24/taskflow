@@ -22,7 +22,6 @@ const projectSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: [true, 'Project owner is required'],
-    index: true,
   },
   members: [
     {

@@ -25,7 +25,6 @@ const taskSchema = new mongoose.Schema({
       message: 'Status must be todo, in-progress, or done',
     },
     default: 'todo',
-    index: true,
   },
   priority: {
     type: String,
@@ -42,12 +41,10 @@ const taskSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Project',
     required: [true, 'Project reference is required'],
-    index: true,
   },
   assignedTo: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    index: true,
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
