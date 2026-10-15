@@ -15,7 +15,11 @@ let server;
 connectDB()
   .then(() => {
     server = app.listen(env.PORT, () => {
-      console.log(`TaskFlow Server running in ${env.NODE_ENV} mode on port ${env.PORT}`);
+      console.log(`\n======================================================`);
+      console.log(`🚀 \x1b[32mTaskFlow Server is LIVE\x1b[0m in \x1b[36m${env.NODE_ENV}\x1b[0m mode`);
+      console.log(`🌐 \x1b[35mWeb Dashboard:\x1b[0m    http://localhost:${env.PORT}`);
+      console.log(`📡 \x1b[34mREST API Health:\x1b[0m  http://localhost:${env.PORT}/health`);
+      console.log(`======================================================\n`);
     });
   })
   .catch((err) => {
