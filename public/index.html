@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskFlow | Modern Project & Task Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="dark-theme">
+  <!-- Toast Notification Hub -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- App Wrapper -->
+  <div id="app" class="app-layout">
+
+    <!-- Top Navigation Bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+          </div>
+          <span class="logo-text">Task<span class="gradient-text">Flow</span></span>
+          <span class="badge-version">v1.0</span>
+        </div>
+
+        <!-- Project Selector Dropdown -->
+        <div id="projectDropdownContainer" class="project-dropdown-wrapper auth-only hidden">
+          <button id="projectSelectBtn" class="project-select-btn">
+            <span class="folder-icon">📁</span>
+            <span id="currentProjectTitle" class="project-title-label">Select Project</span>
+            <svg class="chevron-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+          <div id="projectMenu" class="dropdown-menu hidden">
+            <div class="dropdown-header">
+              <span>Your Workspaces</span>
+              <button id="btnOpenNewProjectModal" class="btn-icon-subtle" title="Create New Project">+</button>
+            </div>
+            <div id="projectListItems" class="dropdown-scroll-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search & Filters -->
+      <div class="topbar-center auth-only hidden">
+        <div class="search-input-box">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="globalSearchInput" placeholder="Search tasks by title, description..." autocomplete="off">
+        </div>
+      </div>
+
+      <!-- Action Buttons & User Profile -->
+      <div class="topbar-right">
+        <!-- Logged Out Actions -->
+        <div id="guestActions" class="guest-actions">
+          <button id="btnOpenLoginModal" class="btn btn-secondary">Sign In</button>
+          <button id="btnOpenRegisterModal" class="btn btn-primary gradient-btn">Get Started</button>
+        </div>
+
+        <!-- Logged In Actions -->
+        <div id="userActions" class="user-actions auth-only hidden">
+          <button id="btnOpenNewTaskModal" class="btn btn-primary btn-sm gradient-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>New Task</span>
+          </button>
+
+          <button id="btnOpenMembersModal" class="btn btn-secondary btn-sm" title="Manage Collaborators">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            <span>Team</span>
+          </button>
+
+          <div class="user-profile-wrapper">
+            <div id="userAvatarBtn" class="user-avatar" tabindex="0">
+              <span id="userInitials">TF</span>
+            </div>
+            <div id="userProfileMenu" class="dropdown-menu profile-dropdown hidden">
+              <div class="profile-info-header">
+                <p id="profileUserName" class="profile-name">User Name</p>
+                <p id="profileUserEmail" class="profile-email">user@taskflow.com</p>
+                <span id="profileUserRole" class="badge-role">User</span>
+              </div>
+              <div class="dropdown-divider"></div>
+              <button id="btnSwitchViewUsers" class="dropdown-item admin-only hidden">
+                <span>👥 All Users Directory</span>
+              </button>
+              <button id="btnQuickDemoLogin" class="dropdown-item">
+                <span>⚡ Switch User Account</span>
+              </button>
+              <button id="btnLogout" class="dropdown-item text-danger">
+                <span>🚪 Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-content">
+
+      <!-- Unauthenticated Hero Landing -->
+      <section id="guestHero" class="guest-hero">
+        <div class="hero-glow-sphere"></div>
+        <div class="hero-badge">Next-Gen Workspace Management</div>
+        <h1 class="hero-title">Orchestrate Projects with <span class="gradient-text">Absolute Velocity</span></h1>
+        <p class="hero-subtitle">TaskFlow is a production-hardened REST platform for agile engineering teams. Coordinate tasks with dynamic Kanban views, strict role permissions, and threaded discussions.</p>
+        
+        <div class="hero-cta-group">
+          <button id="heroGetStartedBtn" class="btn btn-primary btn-lg gradient-btn">Launch Workspace</button>
+          <button id="heroQuickDemoBtn" class="btn btn-secondary btn-lg">Auto-Sign In Demo</button>
+        </div>
+
+        <div class="hero-metrics-grid">
+          <div class="metric-card">
+            <div class="metric-number">RESTful</div>
+            <div class="metric-label">15 Structured Endpoints</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-number">Strict Zod</div>
+            <div class="metric-label">Type & Runtime Validation</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-number">Secured</div>
+            <div class="metric-label">JWT + Helmet + Throttled</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-number">100%</div>
+            <div class="metric-label">Verified Test Coverage</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Authenticated Workspace View -->
+      <section id="workspaceView" class="workspace-section auth-only hidden">
+
+        <!-- Workspace Summary Banner -->
+        <div class="workspace-header">
+          <div class="workspace-info">
+            <div class="title-with-actions">
+              <h2 id="activeProjectTitleDisplay" class="active-project-heading">Select or Create a Project</h2>
+              <button id="btnEditCurrentProject" class="btn-icon-subtle" title="Edit Project Details">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              </button>
+              <button id="btnDeleteCurrentProject" class="btn-icon-subtle text-danger" title="Delete Project">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
+            </div>
+            <p id="activeProjectDescDisplay" class="active-project-subtext">No project selected.</p>
+          </div>
+
+          <!-- Project Stats Counter Pill Strip -->
+          <div class="stats-pills-row">
+            <div class="stat-pill">
+              <span class="pill-dot dot-total"></span>
+              <span class="pill-label">Total</span>
+              <span id="statTotalTasks" class="pill-count">0</span>
+            </div>
+            <div class="stat-pill">
+              <span class="pill-dot dot-todo"></span>
+              <span class="pill-label">To Do</span>
+              <span id="statTodoTasks" class="pill-count">0</span>
+            </div>
+            <div class="stat-pill">
+              <span class="pill-dot dot-progress"></span>
+              <span class="pill-label">In Progress</span>
+              <span id="statProgressTasks" class="pill-count">0</span>
+            </div>
+            <div class="stat-pill">
+              <span class="pill-dot dot-done"></span>
+              <span class="pill-label">Done</span>
+              <span id="statDoneTasks" class="pill-count">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls Toolbar: View Toggle, Filters, Sorters -->
+        <div class="controls-toolbar">
+          <div class="view-toggles">
+            <button id="btnViewKanban" class="toggle-btn active" data-view="kanban">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18" rx="1"></rect><rect x="14" y="3" width="7" height="11" rx="1"></rect></svg>
+              <span>Board</span>
+            </button>
+            <button id="btnViewList" class="toggle-btn" data-view="list">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              <span>List</span>
+            </button>
+          </div>
+
+          <div class="filters-group">
+            <select id="filterPrioritySelect" class="filter-dropdown">
+              <option value="">All Priorities</option>
+              <option value="high">High Priority</option>
+              <option value="medium">Medium Priority</option>
+              <option value="low">Low Priority</option>
+            </select>
+
+            <select id="sortTasksSelect" class="filter-dropdown">
+              <option value="-createdAt">Newest First</option>
+              <option value="dueDate">Due Soonest</option>
+              <option value="-dueDate">Latest Due Date</option>
+              <option value="title">Title (A-Z)</option>
+            </select>
+
+            <button id="btnRefreshWorkspace" class="btn-icon-subtle" title="Refresh">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Kanban Board View -->
+        <div id="kanbanBoardView" class="kanban-board">
+          <!-- Column: To Do -->
+          <div class="kanban-column" data-status="todo">
+            <div class="column-header">
+              <div class="col-title-left">
+                <span class="status-indicator-dot dot-todo"></span>
+                <h3>To Do</h3>
+                <span id="countColTodo" class="col-count">0</span>
+              </div>
+              <button class="btn-icon-add" onclick="window.TaskFlowApp.openNewTaskModal('todo')" title="Add task to To Do">+</button>
+            </div>
+            <div id="columnTasksTodo" class="column-tasks-container"></div>
+          </div>
+
+          <!-- Column: In Progress -->
+          <div class="kanban-column" data-status="in-progress">
+            <div class="column-header">
+              <div class="col-title-left">
+                <span class="status-indicator-dot dot-progress"></span>
+                <h3>In Progress</h3>
+                <span id="countColProgress" class="col-count">0</span>
+              </div>
+              <button class="btn-icon-add" onclick="window.TaskFlowApp.openNewTaskModal('in-progress')" title="Add task to In Progress">+</button>
+            </div>
+            <div id="columnTasksProgress" class="column-tasks-container"></div>
+          </div>
+
+          <!-- Column: Done -->
+          <div class="kanban-column" data-status="done">
+            <div class="column-header">
+              <div class="col-title-left">
+                <span class="status-indicator-dot dot-done"></span>
+                <h3>Done</h3>
+                <span id="countColDone" class="col-count">0</span>
+              </div>
+              <button class="btn-icon-add" onclick="window.TaskFlowApp.openNewTaskModal('done')" title="Add task to Done">+</button>
+            </div>
+            <div id="columnTasksDone" class="column-tasks-container"></div>
+          </div>
+        </div>
+
+        <!-- Table List View -->
+        <div id="listViewContainer" class="list-view-container hidden">
+          <table class="tasks-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Due Date</th>
+                <th>Assignee</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tasksTableBody"></tbody>
+          </table>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- Slide-over Task Details & Discussion Drawer -->
+    <aside id="taskDetailsDrawer" class="drawer hidden" aria-hidden="true">
+      <div class="drawer-backdrop" id="drawerBackdrop"></div>
+      <div class="drawer-panel">
+        <div class="drawer-header">
+          <div class="drawer-status-chip">
+            <span id="drawerTaskStatusBadge" class="status-chip chip-todo">To Do</span>
+            <span id="drawerTaskPriorityBadge" class="priority-chip chip-high">High</span>
+          </div>
+          <button id="btnCloseDrawer" class="btn-icon-close" title="Close details">&times;</button>
+        </div>
+
+        <div class="drawer-content">
+          <div class="drawer-task-info">
+            <h2 id="drawerTaskTitle" class="drawer-task-title">Task Title</h2>
+            <p id="drawerTaskDesc" class="drawer-task-desc">Task description goes here.</p>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="drawer-action-bar">
+            <button id="btnDrawerAdvanceStatus" class="btn btn-secondary btn-sm">Move Status ➔</button>
+            <button id="btnDrawerEditTask" class="btn btn-secondary btn-sm">Edit Task</button>
+            <button id="btnDrawerDeleteTask" class="btn btn-danger btn-sm">Delete</button>
+          </div>
+
+          <div class="drawer-meta-grid">
+            <div class="meta-item">
+              <span class="meta-label">Assigned To</span>
+              <span id="drawerTaskAssignee" class="meta-val">Unassigned</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Due Date</span>
+              <span id="drawerTaskDueDate" class="meta-val">No due date</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Created By</span>
+              <span id="drawerTaskCreatedBy" class="meta-val">Creator</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Created On</span>
+              <span id="drawerTaskCreatedAt" class="meta-val">-</span>
+            </div>
+          </div>
+
+          <div class="drawer-divider"></div>
+
+          <!-- Threaded Comments Section -->
+          <div class="drawer-comments-section">
+            <div class="comments-section-header">
+              <h3>Discussion Thread</h3>
+              <span id="drawerCommentCount" class="badge-counter">0</span>
+            </div>
+
+            <div id="drawerCommentsList" class="comments-stream">
+              <p class="comments-empty-notice">No comments yet. Start the conversation!</p>
+            </div>
+
+            <!-- Add Comment Form -->
+            <form id="drawerCommentForm" class="comment-input-form">
+              <textarea id="drawerCommentText" placeholder="Write a comment or status update..." rows="2" required></textarea>
+              <div class="comment-form-actions">
+                <button type="submit" class="btn btn-primary btn-sm gradient-btn">Post Comment</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Modal: Auth (Login & Register) -->
+    <div id="authModal" class="modal-overlay hidden">
+      <div class="modal-dialog auth-dialog">
+        <div class="modal-header">
+          <div class="auth-tabs">
+            <button id="tabBtnLogin" class="auth-tab active" data-tab="login">Sign In</button>
+            <button id="tabBtnRegister" class="auth-tab" data-tab="register">Create Account</button>
+          </div>
+          <button class="modal-close-btn" data-close="authModal">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Login Form -->
+          <form id="loginForm" class="auth-form">
+            <div class="form-group">
+              <label for="loginEmail">Email Address</label>
+              <input type="email" id="loginEmail" placeholder="you@company.com" required>
+            </div>
+            <div class="form-group">
+              <label for="loginPassword">Password</label>
+              <input type="password" id="loginPassword" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block gradient-btn">Sign In to TaskFlow</button>
+
+            <div class="quick-demo-login-box">
+              <p>Testing locally?</p>
+              <button type="button" id="btnFillDemoCredentials" class="btn btn-secondary btn-sm btn-block">Quick Demo Account (1-Click)</button>
+            </div>
+          </form>
+
+          <!-- Register Form -->
+          <form id="registerForm" class="auth-form hidden">
+            <div class="form-group">
+              <label for="regName">Full Name</label>
+              <input type="text" id="regName" placeholder="Alex Morgan" minlength="2" maxlength="50" required>
+            </div>
+            <div class="form-group">
+              <label for="regEmail">Email Address</label>
+              <input type="email" id="regEmail" placeholder="alex@company.com" required>
+            </div>
+            <div class="form-group">
+              <label for="regPassword">Password (min 8 characters)</label>
+              <input type="password" id="regPassword" placeholder="••••••••" minlength="8" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block gradient-btn">Create Workspace Account</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Create / Edit Project -->
+    <div id="projectModal" class="modal-overlay hidden">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3 id="projectModalTitle">Create Project Workspace</h3>
+          <button class="modal-close-btn" data-close="projectModal">&times;</button>
+        </div>
+        <form id="projectForm" class="modal-body">
+          <input type="hidden" id="projectModalId">
+          <div class="form-group">
+            <label for="projectInputTitle">Project Title</label>
+            <input type="text" id="projectInputTitle" placeholder="e.g. Mobile App Redesign" maxlength="100" required>
+          </div>
+          <div class="form-group">
+            <label for="projectInputDesc">Description (optional)</label>
+            <textarea id="projectInputDesc" placeholder="Scope, milestones, objectives..." rows="3" maxlength="500"></textarea>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-close="projectModal">Cancel</button>
+            <button type="submit" class="btn btn-primary gradient-btn">Save Project</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal: Create / Edit Task -->
+    <div id="taskModal" class="modal-overlay hidden">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3 id="taskModalTitle">Create New Task</h3>
+          <button class="modal-close-btn" data-close="taskModal">&times;</button>
+        </div>
+        <form id="taskForm" class="modal-body">
+          <input type="hidden" id="taskModalId">
+          <div class="form-group">
+            <label for="taskInputTitle">Task Title</label>
+            <input type="text" id="taskInputTitle" placeholder="e.g. Implement OAuth Flow" maxlength="200" required>
+          </div>
+          <div class="form-group">
+            <label for="taskInputDesc">Description (optional)</label>
+            <textarea id="taskInputDesc" placeholder="Detailed requirements and context..." rows="3" maxlength="1000"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="taskInputStatus">Status</label>
+              <select id="taskInputStatus">
+                <option value="todo">To Do</option>
+                <option value="in-progress">In Progress</option>
+                <option value="done">Done</option>
+              </select>
+            </div>
+            <div class="form-group col-6">
+              <label for="taskInputPriority">Priority</label>
+              <select id="taskInputPriority">
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-6">
+              <label for="taskInputDueDate">Due Date (optional)</label>
+              <input type="date" id="taskInputDueDate">
+            </div>
+            <div class="form-group col-6">
+              <label for="taskInputAssignee">Assignee (optional)</label>
+              <select id="taskInputAssignee">
+                <option value="">Unassigned</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-close="taskModal">Cancel</button>
+            <button type="submit" class="btn btn-primary gradient-btn">Save Task</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal: Team & Members -->
+    <div id="membersModal" class="modal-overlay hidden">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3>Project Collaborators</h3>
+          <button class="modal-close-btn" data-close="membersModal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="addMemberForm" class="add-member-form">
+            <label for="memberEmailInput">Add Team Member by Email</label>
+            <div class="input-with-button">
+              <input type="email" id="memberEmailInput" placeholder="teammate@company.com" required>
+              <button type="submit" class="btn btn-primary gradient-btn">Add</button>
+            </div>
+          </form>
+
+          <div class="members-list-wrapper">
+            <h4>Current Members</h4>
+            <ul id="projectMembersList" class="members-roster"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>

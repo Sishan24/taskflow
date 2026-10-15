@@ -17,8 +17,12 @@ const app = express();
 // Trust reverse proxy (needed for Render, Heroku, etc. when determining client IP)
 app.set('trust proxy', 1);
 
-// Security HTTP headers
-app.use(helmet());
+// Security HTTP headers (configured to allow local frontend assets)
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+  })
+);
 
 // Cross-Origin Resource Sharing
 const allowedOrigins = env.ALLOWED_ORIGINS.split(',').map((s) => s.trim());
@@ -49,6 +53,9 @@ app.use(mongoSanitize());
 
 // HTTP Request Logger
 app.use(logger);
+
+// Serve static frontend assets from public directory
+app.use(express.static('public'));
 
 // Health check endpoint for uptime monitors and load balancers
 app.get('/health', (req, res) => {
