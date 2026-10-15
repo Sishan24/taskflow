@@ -7,6 +7,7 @@ import {
   getProjects,
   updateProject,
 } from '../controllers/projectController.js';
+import { createTask, getTasks } from '../controllers/taskController.js';
 import protect from '../middleware/auth.js';
 
 const router = Router();
@@ -40,5 +41,15 @@ router.delete('/:id', protect, deleteProject);
 // WHO: Project owner only
 // FAILS: 401 if unauthenticated, 403 if not owner, 404 if user/project not found, 409 if already a member
 router.post('/:id/members', protect, addMember);
+
+// WHAT: Create a new task within the specified project
+// WHO: Project members only
+// FAILS: 400 if assignee not in project, 401 if unauthenticated, 403 if not project member, 404 if project not found
+router.post('/:id/tasks', protect, createTask);
+
+// WHAT: List all tasks in a project with filter, sort, and pagination
+// WHO: Project members only
+// FAILS: 401 if unauthenticated, 403 if not project member, 404 if project not found
+router.get('/:id/tasks', protect, getTasks);
 
 export default router;
